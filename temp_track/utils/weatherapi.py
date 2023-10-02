@@ -28,13 +28,10 @@ def get_temp(loc: str) -> int | None:
         the temperature of the location in degree celsius or None if there is no data for the location
     """
 
-    # Make sure the api key is set in the environment variable
-    api_key = os.environ["WEATHERAPI_API_KEY"]
-    if api_key == "":
-        raise InvalidAPIKeyException()
-
     # Fetch the weather data
-    res = requests.get(URL, params={"key": api_key, "q": loc, "aqi": "no"})
+    res = requests.get(
+        URL, params={"key": os.environ["WEATHERAPI_API_KEY"], "q": loc, "aqi": "no"}
+    )
     data = res.json()
 
     match res.status_code:
@@ -49,6 +46,23 @@ def get_temp(loc: str) -> int | None:
             raise DataUnavailableException()
         case _:
             raise WeatherAPIException(data["message"])
+
+
+def api_key_is_valid() -> bool:
+    """Checks whether the API key is valid or not."""
+
+    # Make sure the api key is set in the environment variable
+    api_key = os.environ["WEATHERAPI_API_KEY"]
+    if api_key == "":
+        return False
+
+    try:
+        # We know that data for loc: `mumbai` exists
+        get_temp("mumbai")
+    except InvalidAPIKeyException:
+        return False
+
+    return True
 
 
 """

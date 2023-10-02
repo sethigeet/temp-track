@@ -10,6 +10,7 @@ python = ">=3.11,<3.12"
 uagents = "^0.6.2"
 requests = "^2.31.0"
 python-dotenv = "^1.0.0"
+rich = "^13.6.0"
 
 
 [tool.poetry.group.dev.dependencies]
