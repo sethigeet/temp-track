@@ -5,6 +5,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.prompt import Prompt
 
 from temp_track.utils import weatherapi
+from temp_track.agents import tracker, notifier, bureau
+from temp_track.notification_providers.console import ConsoleNotificationProvider
 
 # Load environment variables from `.env` file
 load_dotenv()
@@ -48,7 +50,7 @@ with Progress(
     loc_check_task = progress.add_task("Checking location")
 
     try:
-        temp = weatherapi.get_temp(loc)
+        temp = weatherapi.get_curr_temp(loc)
     except weatherapi.DataUnavailableException:
         print("[red bold]:cross_mark: Invalid location!")
         print(
@@ -62,5 +64,31 @@ with Progress(
         exit(1)
     finally:
         progress.update(loc_check_task, completed=True)
+print(f"Setting location to [green bold]{loc}")
+tracker.set_tracker_location(loc)
 
-print(temp)
+min_temp = Prompt.ask("Enter the [blue bold]minimum temperature[/]")
+try:
+    min_temp = float(min_temp)
+    min_temp = round(min_temp, ndigits=1)
+except Exception:
+    print("[red bold]:cross_mark: Invalid minimum temperature!")
+    print("[red italic]Please enter a valid number")
+    exit(1)
+
+max_temp = Prompt.ask("Enter the [blue bold]maximum temperature[/]")
+try:
+    max_temp = float(max_temp)
+    max_temp = round(max_temp, ndigits=1)
+except Exception:
+    print("[red bold]:cross_mark: Invalid maximum temperature!")
+    print("[red italic]Please enter a valid number")
+    exit(1)
+print(f"Setting temperature range to [green bold]{min_temp}-{max_temp}")
+tracker.set_tracker_temp_range(min_temp, max_temp)
+
+notifier.set_notification_proivder(ConsoleNotificationProvider(min_temp, max_temp, loc))
+
+bureau.run()
+
+print("\n\n\n")

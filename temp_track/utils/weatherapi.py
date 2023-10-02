@@ -17,9 +17,9 @@ class DataUnavailableException(Exception):
     """The weather data for the given location is not available."""
 
 
-def get_temp(loc: str) -> int | None:
+def get_curr_temp(loc: str) -> float | None:
     """
-    Get the temperate of the given location.
+    Get the current temperature of the given location.
 
     args:
         loc: the name of the city or the ip address of a place.
@@ -37,7 +37,7 @@ def get_temp(loc: str) -> int | None:
     match res.status_code:
         # Everything is all right!
         case HTTPStatus.OK:
-            return data["current"]["temp_c"]
+            return float(data["current"]["temp_c"])
         # API key is not valid
         case HTTPStatus.FORBIDDEN:
             raise InvalidAPIKeyException()
@@ -58,7 +58,7 @@ def api_key_is_valid() -> bool:
 
     try:
         # We know that data for loc: `mumbai` exists
-        get_temp("mumbai")
+        get_curr_temp("mumbai")
     except InvalidAPIKeyException:
         return False
 
