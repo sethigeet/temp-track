@@ -4,7 +4,7 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.prompt import Prompt
 
-from temp_track.utils import weatherapi
+from temp_track.utils import weatherapi, misc
 from temp_track.agents import tracker, notifier, bureau
 from temp_track.notification_providers.console import ConsoleNotificationProvider
 
@@ -38,7 +38,7 @@ with Progress(
 
 print("[green bold]:white_heavy_check_mark: Verification succeded!")
 
-loc = Prompt.ask("Enter your [blue bold]location[/]")
+loc = Prompt.ask("Enter your [blue bold]location[/] (leave empty for auto detect)")
 
 # Make sure we have data available for the given location
 with Progress(
@@ -50,7 +50,9 @@ with Progress(
     loc_check_task = progress.add_task("Checking location")
 
     try:
-        temp = weatherapi.get_curr_temp(loc)
+        if loc == "":
+            loc = misc.get_ip_addr()
+        loc_name = weatherapi.get_loc_name_from_loc(loc)
     except weatherapi.DataUnavailableException:
         print("[red bold]:cross_mark: Invalid location!")
         print(
@@ -64,7 +66,7 @@ with Progress(
         exit(1)
     finally:
         progress.update(loc_check_task, completed=True)
-print(f"Setting location to [green bold]{loc}")
+print(f"Setting location to [green bold]{loc_name}")
 tracker.set_tracker_location(loc)
 
 min_temp = Prompt.ask("Enter the [blue bold]minimum temperature[/]")
@@ -87,7 +89,9 @@ except Exception:
 print(f"Setting temperature range to [green bold]{min_temp}-{max_temp}")
 tracker.set_tracker_temp_range(min_temp, max_temp)
 
-notifier.set_notification_proivder(ConsoleNotificationProvider(min_temp, max_temp, loc))
+notifier.set_notification_proivder(
+    ConsoleNotificationProvider(min_temp, max_temp, loc_name)
+)
 
 bureau.run()
 

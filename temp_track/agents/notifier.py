@@ -1,9 +1,11 @@
+import logging
 from uagents import Agent, Context
 
 from temp_track.messages import TrackerStatus, TrackerError
 from temp_track.notification_providers import NotificationProvider
 
 notifier = Agent(name="notifier", seed="notifier-agent-seed")
+notifier._logger = logging.Logger("notifier-logger", logging.ERROR)
 
 notification_provider: NotificationProvider | None = None
 

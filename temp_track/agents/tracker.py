@@ -1,3 +1,4 @@
+import logging
 from uagents import Agent, Context
 
 from temp_track.utils import weatherapi
@@ -5,6 +6,7 @@ from temp_track.messages import TrackerStatus, TrackerError
 from .notifier import notifier
 
 tracker = Agent(name="tracker", seed="tracker-agent-seed")
+tracker._logger = logging.Logger("tracker-logger", logging.ERROR)
 
 
 def set_tracker_temp_range(min_temp: float, max_temp: float) -> None:
