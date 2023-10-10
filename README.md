@@ -16,3 +16,7 @@ A simple application that fetches the current temperature in the location specif
 # Notifiers
 
 Currently, there is only the console notifier which prints to the console from which the program is running but this can be extended to many other things such as sending an email, a push notification or even a text message. The options are limitless!
+
+---
+
+#### Feel free to look at the [web branch](https://github.com/sethigeet/temp-track/tree/web) (which is still a WIP) which add a web app for notifying the user instead of the terminal and is hence much more user friendly!
