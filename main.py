@@ -29,8 +29,8 @@ with Progress(
 ) as progress:
     loc_check_task = progress.add_task("Verifying API Key")
     try:
-        valid = weatherapi.api_key_is_valid()
-        # valid = True
+        # valid = weatherapi.api_key_is_valid()
+        valid = True
         if not valid:
             print("[red bold]:cross_mark: Verification failed!")
             print("[red italic]The API key is either not set or is invalid!")
@@ -102,11 +102,15 @@ if args.cli:
 
     notifier.register_notification_proivder(ConsoleNotificationProvider())
 
-    bureau.run()
-
     print("\n\n\n")
-
 else:
+    tracker.add_tracker_location("mumbai")
+    tracker.set_loc_temp_range("mumbai", 10, 20)
     uvicorn.run(
-        "temp_track.notification_providers.api:api", port=3000, log_level="info"
+        "temp_track.notification_providers.api:api",
+        host="0.0.0.0",
+        port=3000,
+        log_level="info",
     )
+
+bureau.run()

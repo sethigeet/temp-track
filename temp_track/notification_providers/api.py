@@ -1,6 +1,8 @@
 from fastapi import FastAPI, status
-from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from temp_track.agents import tracker
 from temp_track.messages import TrackerStatus, TrackerError
@@ -37,7 +39,7 @@ api.add_middleware(
 )
 
 
-@api.get("/status/{loc}")
+@api.get("/api/status/{loc}")
 async def get_loc_status(loc: str):
     if loc not in msgs:
         stat = None
@@ -56,11 +58,16 @@ async def get_loc_status(loc: str):
     return {"status": stat, "error": error}
 
 
-@api.get("/register}")
-async def register_loc(loc: str, min_temp: float, max_temp: float):
+class RegisterInput(BaseModel):
+    loc: str
+    min_temp: float
+    max_temp: float
+
+@api.post("/api/register")
+async def register_loc(input: RegisterInput):
     try:
-        tracker.add_tracker_location(loc)
-        tracker.set_loc_temp_range(loc, min_temp, max_temp)
+        tracker.add_tracker_location(input.loc)
+        tracker.set_loc_temp_range(input.loc, input.min_temp, input.max_temp)
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={"msg": "Registered successfully!"},
@@ -70,3 +77,13 @@ async def register_loc(loc: str, min_temp: float, max_temp: float):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "An unknown error occurred!"},
         )
+
+# Host react app!
+api.mount("/assets", StaticFiles(directory="temp_track_web/dist/assets"), name="assets")
+with open("temp_track_web/dist/index.html") as f:
+    index_page = f.read()
+@api.get("/")
+@api.get("/home")
+@api.get("/index.html")
+async def get_index_page():
+    return HTMLResponse(index_page)
